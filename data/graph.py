@@ -28,7 +28,7 @@ class DAG:
               (29, 22), (29, 28)]
         for row, col in edges:
             self.G_matrix[row, col] = 1
-        print(self.G_matrix)
+        # print(self.G_matrix)
 
         # load from data.xlsx, and define nodes
         self.nodes = {}
@@ -38,29 +38,29 @@ class DAG:
             # print(self.nodes[row['Index']])
 
         self.V = [i for i in range(self.node_num) if np.sum(self.G_matrix[i]) == 0]      # initialise with last node
+        self.outgoing_counts = [np.sum(self.G_matrix[i]) for i in range(self.node_num)]  # calculate outgoing edges
 
-    def pop_node(self, node_index):       # popped the passed in node, and return the list of new last nodes index (starts from 0)
-        outgoing_counts = [np.sum(self.G_matrix[i]) for i in range(self.node_num)]  # calculate outgoing edges
+    def pop_node(self, node_index):       # popped the passed in node, and return the list of new last nodes index (starts from 0)       
 
         if node_index in self.V:
             self.V.remove(node_index)
 
         for i in range(self.node_num):
             if self.G_matrix[i][node_index] != 0:
-                outgoing_counts[i] -= 1
+                self.outgoing_counts[i] -= 1
                 self.G_matrix[i][node_index] = 0        # remove this edge
                 
-                if outgoing_counts[i] == 0:
+                if self.outgoing_counts[i] == 0:
                     self.V.append(i)                   # row as the end node index
 
 
-# testing
-graph = DAG()
-print(graph.nodes[30])
-print(len(graph.G_matrix))
-graph.pop_node(np.int64(30))
-print(graph.V)
-graph.pop_node(np.int64(0))
-print(graph.V)
+# single file testing
+# graph = DAG()
+# print(graph.nodes[30])
+# print(len(graph.G_matrix))
+# graph.pop_node(np.int64(30))
+# print(graph.V)
+# graph.pop_node(np.int64(0))
+# print(graph.V)
 
 

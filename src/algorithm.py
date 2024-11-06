@@ -25,14 +25,14 @@ class LCL:
     def find_schedule(self):
         for self.iteration in range(self.graph.node_num):
             gj_list = [self.cost_function(node_index) for node_index in self.graph.V]
-            min_index = np.min(gj_list)
-            print(self.graph.V)
-            np.insert(self.schedule, 0, min_index + 1)          # +1 to convert the index to normal readable format, insert to the front of the schedule list
-            self.graph.pop_node(min_index)                      # pop out the node with least cost
+            min_index = np.argmin(gj_list)
+            # print(self.graph.V)
+            self.schedule = np.insert(self.schedule, 0, self.graph.V[min_index] + 1)          # +1 to convert the index to normal readable format, insert to the front of the schedule list
+            self.graph.pop_node(self.graph.V[min_index])                      # pop out the node with least cost
 
 
 # algorithim local testing
-graph = DAG()
-algo = LCL(graph=graph)
-algo.find_schedule()
-print(algo.schedule)
+# graph = DAG()
+# algo = LCL(graph=graph)
+# algo.find_schedule()
+# print(algo.schedule)
