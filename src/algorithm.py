@@ -7,24 +7,32 @@ from data.graph import DAG
 
 
 class LCL:
-    def __init__(self) -> None:
-        self.graph = DAG()
+    def __init__(self, graph) -> None:
+        self.graph = graph
         self.schedule = []
-        
-        self.total_completion_time = np.sum([self.graph.nodes[i + 1].processing_time for i in range(self.graph.node_num)])
+        # initialise with total completion time
+        self.completion_time_j = np.sum([self.graph.nodes[i].processing_time for i in range(self.graph.node_num)])
+        self.iteration = 0
     
     def cost_function(self, j):
         dj = self.graph.nodes[j].due_date
-        Cj = self.total_completion_time
+        Cj = self.completion_time_j
         gj_Cj = np.max([0, Cj - dj])
 
-        self.total_completion_time -= self.graph.nodes[j].processing_time
+        self.completion_time_j -= self.graph.nodes[j].processing_time
         return gj_Cj
     
-    def find_schedule(self):            # main algorithm
-        pass
+    def find_schedule(self):
+        for self.iteration in range(self.graph.node_num):
+            gj_list = [self.cost_function(node_index) for node_index in self.graph.V]
+            min_index = np.min(gj_list)
+            print(self.graph.V)
+            np.insert(self.schedule, 0, min_index + 1)          # +1 to convert the index to normal readable format, insert to the front of the schedule list
+            self.graph.pop_node(min_index)                      # pop out the node with least cost
 
-        
 
-algo = LCL()
-print(algo.cost_function(31))
+# algorithim local testing
+graph = DAG()
+algo = LCL(graph=graph)
+algo.find_schedule()
+print(algo.schedule)

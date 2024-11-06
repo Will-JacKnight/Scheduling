@@ -28,19 +28,39 @@ class DAG:
               (29, 22), (29, 28)]
         for row, col in edges:
             self.G_matrix[row, col] = 1
-        # print(self.G_matrix)
+        print(self.G_matrix)
 
         # load from data.xlsx, and define nodes
         self.nodes = {}
         df = pd.read_excel("data/data.xlsx", usecols="A:D")
         for _, row in df.iterrows():
-            self.nodes[row['Index']] = Node(row['Index'], row['Type'], row['Processing Time'], row['Due Date'])
+            self.nodes[row['Index'] - 1] = Node(row['Index'], row['Type'], row['Processing Time'], row['Due Date'])
             # print(self.nodes[row['Index']])
-        
-        self.last_node = self.nodes[self.node_num]
+
+        self.V = [i for i in range(self.node_num) if np.sum(self.G_matrix[i]) == 0]      # initialise with last node
+
+    def pop_node(self, node_index):       # popped the passed in node, and return the list of new last nodes index (starts from 0)
+        outgoing_counts = [np.sum(self.G_matrix[i]) for i in range(self.node_num)]  # calculate outgoing edges
+
+        if node_index in self.V:
+            self.V.remove(node_index)
+
+        for i in range(self.node_num):
+            if self.G_matrix[i][node_index] != 0:
+                outgoing_counts[i] -= 1
+                self.G_matrix[i][node_index] = 0        # remove this edge
+                
+                if outgoing_counts[i] == 0:
+                    self.V.append(i)                   # row as the end node index
 
 
+# testing
 graph = DAG()
-print(graph.nodes[1])
+print(graph.nodes[30])
+print(len(graph.G_matrix))
+graph.pop_node(np.int64(30))
+print(graph.V)
+graph.pop_node(np.int64(0))
+print(graph.V)
 
 
