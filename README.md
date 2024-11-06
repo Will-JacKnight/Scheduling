@@ -5,19 +5,34 @@ This program is designed to find a schedule the execution of a serverless workfl
 
 ---
 ### Pre-installation
+
 In order to run the program, you'll need to install python virtual environment. You can follow the following steps:
-1.	**Navigate to the root directory of this project:**
-    ```cd /path/to/this/project```
+
+1. **Navigate to the root directory of this project:**
+    ```sh
+    cd /path/to/this/project
+    ```
+
 2.	**Create a virtual environment:**
-    `python3 -m venv venv`
-This creates a virtual environment in a folder named venv within your project directory. You can name it something else if you prefer.
+    ```sh
+    python3 -m venv venv
+    ```
+    This creates a virtual environment in a folder named venv within your project directory. You can name it something else if you prefer.
+
 3.	**Activate the virtual environment:**
-	* On Windows:
-    ``` venv\Scripts\activate```
-	* On macOS and Linux:
-    ``` source venv/bin/activate```
+    * On Windows:
+        ```sh
+        venv\Scripts\activate
+        ```
+    * On macOS or Linux:
+        ```sh
+        source venv/bin/activate
+        ```
+
 4.	**Install the required packages:**
-    ``` pip install -r requirements.txt```
+    ```sh
+    pip install -r requirements.txt
+    ```
 
 ---
 ### User Instruction
