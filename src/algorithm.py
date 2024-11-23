@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import numpy as np
 import pandas as pd
-from data.graph import DAG
+from graph import DAG
 
 
 class LCL:
@@ -35,9 +35,11 @@ class LCL:
         for self.iteration in range(self.graph.node_num):
             gj_list = [self.cost_function(node_index) for node_index in self.graph.V]
             min_index = np.argmin(gj_list)
-            # print(self.graph.V)
-            self.schedule = np.insert(self.schedule, 0, self.graph.V[min_index] + 1)          # +1 to convert the index to normal readable format, insert to the front of the schedule list
-            self.graph.pop_node(self.graph.V[min_index], node_type="last")                      # pop out the node with least cost
+            # convert from 0 indexing to 1 indexing to get original node number
+            # add node to the front of schedule
+            self.schedule = np.insert(self.schedule, 0, self.graph.V[min_index] + 1)
+            # pop out the node with the least cost
+            self.graph.pop_node(self.graph.V[min_index], node_type="last")
 
             if (printEachIteration):
                 # print("-----------------------------------------------------")
@@ -55,17 +57,7 @@ class TabuSearch:
     def __init__(self, graph) -> None:
         self.graph = graph
 
-    # def generate_initial_candidates(self):          # need to take into account the DAG graph order
-    #     # get V, pop oout rando
-        
-    #     for i in range(self.graph.node_num):
-    #         if self.graph.V_first_nodes:
-    #             self.candidates.append(self.graph.nodes[i])
-    #         self.graph.pop_first_nodes(self.graph.V_first_nodes)
-    #         self.candidates.append(self.graph.nodes[i])
-
-
-    def minimizer(self, L: int, K: int, gamma: int, initial_schedule: list):
+    def find_schedule(self, L: int, K: int, gamma: int, initial_schedule: list, aspiration_criterion: bool=False):
         '''
         Apply tabu search with initialized parameters to minimize total tardiness.
 
@@ -74,6 +66,7 @@ class TabuSearch:
             K (int): Amount of solutions found (initial solution is 0).
             gamma (int): Tolerance from g_best to accept solution. 
             initial_schedule (list): Schedule to be optimized on.
+            aspiration_criterion (bool): Optional aspiration criterion that accepts solution incl. in tabu list if it improves g_best. Default is False.
         '''
 
         # set values of tabu search
@@ -82,10 +75,10 @@ class TabuSearch:
         self.gamma = gamma
         self.schedule = initial_schedule.copy()
 
-        # get index where last solution was found (-1 as cycles start at i + 1)
-        solution_found_index = -1
+        # index where new cycle starts
+        new_cycle_index = 0
         # tracker of amount of solutions found 
-        K_solutions = 0
+        k = 0
         # empty tabu list
         tabu_list = []
 
@@ -94,67 +87,70 @@ class TabuSearch:
         best_solution = self.schedule.copy()
         print(f"The initial solution S = {best_solution} has a total tardiness of {g_best}")
 
-        # infinite loop stopped when K iterations reached or no better solution found in some iteration
-        while K_solutions < self.K:
+        # infinite loop stopped when K solutions found or no better solution found in one complete cycle
+        while k < self.K:
             # track if solution found in current cycle
             found_solution_in_cycle = False
 
             # iterate from last position where solution was found
-            for i in range(solution_found_index + 1, solution_found_index + 1 + self.graph.node_num - 1):
-                # restrict indices to possible indices of list
+            for i in range(new_cycle_index, new_cycle_index + self.graph.node_num - 1):
+                # restrict indices to possible indices of list using modulo
                 current_index = i % (self.graph.node_num - 1)
                 
-                # define swap pair
-                swap_pair = (current_index, current_index + 1)
-
-                # check if swap pair in tabu list
-                if swap_pair in tabu_list:
-                    continue
+                # define swap pair and sort them
+                swap_pair = (self.schedule[current_index], self.schedule[current_index + 1])
+                swap_pair = tuple(sorted(swap_pair))
 
                 # swap two neighbouring nodes
                 self.schedule[current_index], self.schedule[current_index + 1] = self.schedule[current_index + 1], self.schedule[current_index]
 
-                # check if new schedule valid
-                if self.check_validity():
-                    # calculate tardiness of current schedule
-                    current_tardiness = self.total_tardiness()
-
-                    # accept solution if it is less than g_best plus tolerance
-                    if current_tardiness <= g_best + self.gamma:
-                        if current_tardiness < g_best:
-                            g_best = current_tardiness
-                            best_solution = self.schedule.copy()
-                            print(f"Improved solution found with total tardiness = {g_best} (current K={K_solutions + 1})")
-                        
-                        # update where last solution was found
-                        solution_found_index = current_index
-                        found_solution_in_cycle = True
-
-                        # add swap pair to tabu list and remove the oldest entry if the list is too long
-                        tabu_list.append(swap_pair)
-                        if len(tabu_list) > self.L:
-                            tabu_list.pop(0)
-
-                        # increment amount of solutions found and start new cycle
-                        K_solutions += 1
-                        break
+                # check validity of solution and skip current iteration if not valid
+                if self.check_validity() == False:
+                    # swap back
+                    self.schedule[current_index], self.schedule[current_index + 1] = self.schedule[current_index + 1], self.schedule[current_index]        
+                    continue
+                
+                # calculate tardiness of current schedule
+                current_tardiness = self.total_tardiness()
+                
+                # calculate delta of current schedule
+                delta = g_best - current_tardiness
+                
+                # accept solution if delta is higher than -gamma and not from tabu list
+                # if aspiration_criterion is set to true also check this criterion (one of both criterion to accept solution)
+                if (delta > (- self.gamma) and (swap_pair not in tabu_list)) or (aspiration_criterion==True and current_tardiness < g_best):
+                    found_solution_in_cycle = True
                     
-                    else:
-                        # revert swap if not accepted as a solution
-                        self.schedule[current_index], self.schedule[current_index + 1] = self.schedule[current_index + 1], self.schedule[current_index]
-
+                    # save solution if better than current g_best
+                    if current_tardiness < g_best: 
+                        g_best = current_tardiness
+                        best_solution = self.schedule.copy()
+                        print(f"Improved solution found with total tardiness = {g_best} (current k = {k+1})")
+                    
+                    # update where new cycle should start
+                    new_cycle_index = current_index + 1
+                    
+                    # add swap pair to tabu list and remove the oldest entry if the list is too long
+                    tabu_list.append(swap_pair)
+                    if len(tabu_list) > self.L:
+                        tabu_list.pop(0)
+                        
+                    # increment amount of solutions found and start new cycle
+                    k += 1
+                    break
+                    
                 else:
                     # revert swap if not accepted as a solution
                     self.schedule[current_index], self.schedule[current_index + 1] = self.schedule[current_index + 1], self.schedule[current_index]
-
+                    
             # terminate search if no solution found in one cycle
             if not found_solution_in_cycle:
-                print(f"\nNo further improvements found. Terminated search at K = {K_solutions}.")
+                print(f"\nNo further improvements found. Terminated search at k = {k}.")
                 print(f"Best solution: S = {best_solution}")
                 print(f"Total Tardiness = {g_best}\n")
                 return
 
-        print(f"Terminated search at K = {K_solutions}.") 
+        print(f"\nTerminated search at k = {k}.") 
         print(f"Best solution found: S = {best_solution}")
         print(f"Total Tardiness of {g_best}\n")
         return
@@ -162,20 +158,21 @@ class TabuSearch:
 
     def check_validity(self):
         '''
-        Check if the current schedule is valid based on DAG dependencies in adjecency matrix.
+        Check if the current schedule is valid based on DAG dependencies in adjacency matrix.
         '''
         # keep track of already scheduled jobs
         scheduled_set = set()
 
         for scheduled_node in self.schedule:
+            # adjust scheduled_node to 0 indexing (currently 1 indexed)
+            scheduled_node -= 1
+            
             # add current node to schedule
             scheduled_set.add(scheduled_node)
 
             # check if all predecessors are already scheduled
             for pred_node in range(self.graph.node_num):
-                # substract one to scheduled_node to convert to 0 indexing 
-                # add one to pred_node to convert to 1 indexing
-                if self.graph.G_matrix[pred_node][scheduled_node - 1] == 1 and pred_node + 1 not in scheduled_set:
+                if self.graph.G_matrix[pred_node, scheduled_node] == 1 and pred_node not in scheduled_set:
                     return False
         
         return True

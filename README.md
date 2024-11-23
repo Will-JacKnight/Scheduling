@@ -36,7 +36,7 @@ In order to run the program, you'll need to install python virtual environment. 
 
 ---
 ### User Instruction
-To manipulate with the algorithm, simply run the 'main.py' file. 
+To manipulate with the algorithm, simply run the 'src/main.py' file. 
 
 ---
 ### Other useful information about this codebase
