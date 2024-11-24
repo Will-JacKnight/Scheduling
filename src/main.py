@@ -25,12 +25,6 @@ print("This part is designd to utilise LCL algorithm for finding the optimal sol
 
 algo = LCL(graph=graph)
 algo.find_schedule(printEachIteration=True)
-S = algo.schedule
-g_max = algo.g_max
-
-print("\nThe optimal schedule for 1|prec|g*max problem is:")
-print(f"S = {[int(S[i]) for i in range(len(S))]}")
-print(f"where g*max = {g_max}\n")
 
 # Question 2: tabu search for approximate optimal solution for 1|prec|sum_Tj problem
 print("\n-------------------Results for Question 2---------------------")

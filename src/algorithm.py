@@ -16,13 +16,20 @@ class LCL:
     '''
     def __init__(self, graph: DAG) -> None:
         self.graph = graph
+        # initialize with empty schedule
         self.schedule = []
-        # initialise with total completion time
+        # initialize with total completion time
         self.completion_time_j = np.sum([self.graph.nodes[i].processing_time for i in range(self.graph.node_num)])
         self.iteration = 0
-        self.g_max = 0
+        self.g_max_list = []
 
-    def cost_function(self, j) -> float:
+    def cost_function(self, j: int) -> float:
+        '''
+        Calculate cost for a given job, the cost function is defined as the tardiness.
+
+        Args:
+            j (int): job index.
+        '''
         dj = self.graph.nodes[j].due_date
         Cj = self.completion_time_j
         gj_Cj = np.max([0, Cj - dj])
@@ -32,26 +39,39 @@ class LCL:
     
 
     def find_schedule(self, printEachIteration: bool=False):
+        '''
+        Apply LCL algorithm to minimize g*max.
+
+        Args:
+            printEachIteration (bool): Set True to print iteration results. Default is False.
+        '''
         for self.iteration in range(self.graph.node_num):
-            # store all last jobs' cost inside V set
+            # calculate and store all last jobs' cost inside gj_list
             gj_list = [self.cost_function(node_index) for node_index in self.graph.V]
-            # get index of the job in set V with the least cost
+            # get index of the job in within V set with the least cost
             min_index = np.argmin(gj_list)
-            # get the g*max from currently scheduled nodes
-            self.g_max = np.maximum(np.max(gj_list), self.g_max)
+            # calculate gl(Cl) and put it into g_max_list
+            # convert to actual job index by indexing set V
+            self.g_max_list.append(int(min(gj_list)))
             # convert from 0 indexing to 1 indexing to get original node number
             # add node to the front of schedule (schedule in a reversed order)
             self.schedule = np.insert(self.schedule, 0, self.graph.V[min_index] + 1)
             # pop out the node with the least cost
             self.graph.pop_node(self.graph.V[min_index], node_type="last")
-
+            
+            # print intermediate iteration schedule
             if (printEachIteration):
-                # print("-----------------------------------------------------")
-                # +1 to convert to 1 indexing
                 iteration_type = "final" if self.iteration == self.graph.node_num - 1 else "partial"
                 schedule_list = [int(node) for node in self.schedule]
+                # +1 to convert to 1 indexing
                 print(f"In iteration {self.iteration + 1}: ")
-                print(f"{iteration_type} schedule S = {schedule_list}")
+                print(f"{iteration_type} schedule S = {schedule_list}\n")
+
+        # print the optimal schedule
+        print("\nThe optimal schedule for 1|prec|g*max problem is:")
+        print(f"S = {[int(self.schedule[i]) for i in range(self.graph.node_num)]}")
+        print(f"where g*max = {max(self.g_max_list)}\n")
+
 
 class TabuSearch:
     '''

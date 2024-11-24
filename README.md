@@ -43,8 +43,11 @@ In order to run the program, you'll need to install python virtual environment. 
 ### User Instruction
 To test with the this program, if all prerequisites are installed properly, simply run the 'src/main.py' file and results for both algorithms will display on the CLI.
 
-#### Intermediate scheduling results display control
-Turn off the partial schedule results display by setting the value of `printEachIteration` to `False`
+1. Intermediate scheduling results display control
+Turn off the partial schedule results display by setting the value of `printEachIteration` to `False`, which is set to `True` by default.
+
+2. Modify parameters for Tabu Search
+Vary different values of K (maximum number of iterations), L (Tabu List length) and gamma (tolerance) by assigning different values in `find_schedule` parameter list.
 
 
 ---
