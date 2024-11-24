@@ -63,16 +63,16 @@ class TabuSearch:
     def __init__(self, graph: DAG) -> None:
         self.graph = graph
 
-    def find_schedule(self, L: int, K: int, gamma: int, initial_schedule: list=None, random_initial_schedule: bool=False, aspiration_criterion: bool=False):
+    def find_schedule(self, L: int, K: int, gamma: int, initial_schedule: list=None, generate_initial_schedule: bool=False, aspiration_criterion: bool=False):
         '''
         Apply tabu search with initialized parameters to minimize total tardiness.
 
         Args:
             L (int): Length of tabu list.
-            K (int): Amount of solutions found (initial solution is 0).
+            K (int): Maximum number of iterations / solutions (initial solution is k=0).
             gamma (int): Tolerance from g_best to accept solution. 
-            initial_schedule (list): Optional, force initial solution to this schedule (0 indexed). Default is None.
-            random_initial_schedule (bool): Creates an initial solution considering precedence constraints. 
+            initial_schedule (list): Optional, force initial solution to this schedule (1 indexed). Default is None.
+            generate_initial_schedule (bool): Creates an initial solution considering precedence constraints. 
                                             initial_schedule takes precedence before random_initial_solution. Default is False.
             aspiration_criterion (bool): Optional aspiration criterion that accepts solution incl. in tabu list if it improves g_best. Default is False.
         '''
@@ -88,7 +88,7 @@ class TabuSearch:
             # check initial schedule for validity
             if self.check_validity() == False:
                 raise ValueError("Initial solution does not meet precedence constraints. Provide a valid initial solution.")
-        elif random_initial_schedule == True:
+        elif generate_initial_schedule == True:
             adjacency_matrix = self.graph.G_matrix.copy()
             self.schedule = []
             while len(self.schedule) < self.graph.node_num:
