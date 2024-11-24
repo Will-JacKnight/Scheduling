@@ -8,7 +8,7 @@ This program is designed to find a schedule the execution of a serverless workfl
 
 In order to run the program, you'll need to install python virtual environment. You can follow the following steps:
 
-1. **Clone this GitHub Repository to your local machine **
+1. **Clone this GitHub Repository to your local machine:**
     ```sh
     git clone git@github.com:Will-JacKnight/Scheduling.git
     ```
