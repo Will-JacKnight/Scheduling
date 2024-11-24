@@ -44,6 +44,6 @@ algo = TabuSearch(graph=graph)
 # try with different numbers of K (10, 100, 1000)
 algo.find_schedule(L=20, K=10, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True)
 # check that algorithm also works for random initial schedule
-algo.find_schedule(L=20, K=10, gamma=10, generate_initial_schedule=True, aspiration_criterion=True)
+algo.find_schedule(L=20, K=10, gamma=10, aspiration_criterion=True)
 # algo.find_schedule(L=20, K=100, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True)
 # algo.minimizer(L=20, K=1000, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True)

@@ -63,7 +63,7 @@ class TabuSearch:
     def __init__(self, graph: DAG) -> None:
         self.graph = graph
 
-    def find_schedule(self, L: int, K: int, gamma: int, initial_schedule: list=None, generate_initial_schedule: bool=False, aspiration_criterion: bool=False):
+    def find_schedule(self, L: int, K: int, gamma: int, initial_schedule: list=None, generate_initial_schedule: bool=True, aspiration_criterion: bool=False):
         '''
         Apply tabu search with initialized parameters to minimize total tardiness.
 
@@ -73,8 +73,8 @@ class TabuSearch:
             gamma (int): Tolerance from g_best to accept solution. 
             initial_schedule (list): Optional, force initial solution to this schedule (1 indexed). Default is None.
             generate_initial_schedule (bool): Creates an initial solution considering precedence constraints. 
-                                            initial_schedule takes precedence before random_initial_solution. Default is False.
-            aspiration_criterion (bool): Optional aspiration criterion that accepts solution incl. in tabu list if it improves g_best. Default is False.
+                                              initial_schedule takes precedence before random_initial_solution. Default is True.
+            aspiration_criterion (bool): Optional aspiration criterion that accepts solution included in tabu list if it improves g_best. Default is False.
         '''
 
         # set values of tabu search
