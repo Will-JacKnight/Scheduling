@@ -14,7 +14,7 @@ class LCL:
     Args:
         graph (DAG): DAG to be optimized on.
     '''
-    def __init__(self, graph) -> None:
+    def __init__(self, graph: DAG) -> None:
         self.graph = graph
         self.schedule = []
         # initialise with total completion time
@@ -31,7 +31,7 @@ class LCL:
         return gj_Cj
     
 
-    def find_schedule(self, printEachIteration):
+    def find_schedule(self, printEachIteration: bool=False):
         for self.iteration in range(self.graph.node_num):
             # store all last jobs' cost inside V set
             gj_list = [self.cost_function(node_index) for node_index in self.graph.V]
@@ -60,7 +60,7 @@ class TabuSearch:
     Args:
         graph (DAG): DAG to be optimized on.
     '''
-    def __init__(self, graph) -> None:
+    def __init__(self, graph: DAG) -> None:
         self.graph = graph
 
     def find_schedule(self, L: int, K: int, gamma: int, initial_schedule: list=None, random_initial_schedule: bool=False, aspiration_criterion: bool=False):
