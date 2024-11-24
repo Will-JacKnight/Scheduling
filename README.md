@@ -8,18 +8,23 @@ This program is designed to find a schedule the execution of a serverless workfl
 
 In order to run the program, you'll need to install python virtual environment. You can follow the following steps:
 
-1. **Navigate to the root directory of this project:**
+1. **Clone this GitHub Repository to your local machine **
+    ```sh
+    git clone git@github.com:Will-JacKnight/Scheduling.git
+    ```
+
+2. **Navigate to the root directory of this project:**
     ```sh
     cd /path/to/this/project
     ```
 
-2.	**Create a virtual environment:**
+3.	**Create a virtual environment:**
     ```sh
     python3 -m venv venv
     ```
     This creates a virtual environment in a folder named venv within your project directory. You can name it something else if you prefer.
 
-3.	**Activate the virtual environment:**
+4.	**Activate the virtual environment:**
     * On Windows:
         ```sh
         venv\Scripts\activate
@@ -29,24 +34,26 @@ In order to run the program, you'll need to install python virtual environment. 
         source venv/bin/activate
         ```
 
-4.	**Install the required packages:**
+5.	**Install the required pre-requisites:**
     ```sh
     pip install -r requirements.txt
     ```
 
 ---
 ### User Instruction
-To manipulate with the algorithm, simply run the 'src/main.py' file. 
+To test with the this program, if all prerequisites are installed properly, simply run the 'src/main.py' file and results for both algorithms will display on the CLI.
+
+#### Intermediate scheduling results display control
+Turn off the partial schedule results display by setting the value of `printEachIteration` to `False`
+
 
 ---
 ### Other useful information about this codebase
- - The structure of the DAG graph is stored in the data/ directory.
- - The data of nodes is imported in the graph.py class.
- - Algorithm is defined as a single class in src/algorithm.py, where you will find scaling the program fairly easy.
- - 
+ - This program is designed to be scalable, where DAG structure and algorithms are defined as modular classes, both of them can be swapped easily.
+ - The details of jobs are stored in the "data/data.xlsx", while the precedence relationship of jobs (DAG) is defined in "main.py" as an edge variable, for easy implementation.
+ - Both LCL and Tabu Search algorithms are defined as single classes in "src/algorithm.py", where you will find switching algorithms fairly easy.
 
 ---
- ### Author
-Wang, Jiankai  
-Huang, Yile  
+ ### Credits
+This project is developed by Wang, Jiankai and Huang, Yile.
 Special thanks to Casale, Giuliano and Paccagnan, Dario.

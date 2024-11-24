@@ -20,7 +20,7 @@ class LCL:
         # initialise with total completion time
         self.completion_time_j = np.sum([self.graph.nodes[i].processing_time for i in range(self.graph.node_num)])
         self.iteration = 0
-    
+        self.g_max = 0
 
     def cost_function(self, j) -> float:
         dj = self.graph.nodes[j].due_date
@@ -33,19 +33,25 @@ class LCL:
 
     def find_schedule(self, printEachIteration):
         for self.iteration in range(self.graph.node_num):
+            # store all last jobs' cost inside V set
             gj_list = [self.cost_function(node_index) for node_index in self.graph.V]
+            # get index of the job in set V with the least cost
             min_index = np.argmin(gj_list)
+            # get the g*max from currently scheduled nodes
+            self.g_max = np.maximum(np.max(gj_list), self.g_max)
             # convert from 0 indexing to 1 indexing to get original node number
-            # add node to the front of schedule
+            # add node to the front of schedule (schedule in a reversed order)
             self.schedule = np.insert(self.schedule, 0, self.graph.V[min_index] + 1)
             # pop out the node with the least cost
             self.graph.pop_node(self.graph.V[min_index], node_type="last")
 
             if (printEachIteration):
                 # print("-----------------------------------------------------")
-                print(f"In iteration {self.iteration}: ")
-                print(f"partial schedule S = {[int(self.schedule[i]) for i in range(len(self.schedule))]}")
-
+                # +1 to convert to 1 indexing
+                iteration_type = "final" if self.iteration == self.graph.node_num - 1 else "partial"
+                schedule_list = [int(node) for node in self.schedule]
+                print(f"In iteration {self.iteration + 1}: ")
+                print(f"{iteration_type} schedule S = {schedule_list}")
 
 class TabuSearch:
     '''
