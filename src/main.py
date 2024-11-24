@@ -36,11 +36,14 @@ print(f"where g*max = {g_max}\n")
 print("\n-------------------Results for Question 2---------------------")
 print("This part is designd to use tabu search for finding the optimal solution for 1|prec|sum_Tj problem. \n")
 
+# 1 indexed initial solution
 initial_solution = [30, 29, 23, 10, 9, 14, 13, 12, 4, 20, 22, 3, 27, 28, 8, 7, 19, 21, 26, 18, 25, 17, 15, 6, 24, 16, 5, 11, 2, 1, 31]
 graph = DAG(node_num=31, edges=edges, node_data=df)
 algo = TabuSearch(graph=graph)
 
 # try with different numbers of K (10, 100, 1000)
 algo.find_schedule(L=20, K=10, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True)
-# algo.minimizer(L=20, K=100, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True)
+# check that algorithm also works for random initial schedule
+# algo.find_schedule(L=20, K=10, gamma=10, random_initial_schedule=True, aspiration_criterion=True)
+# algo.find_schedule(L=20, K=100, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True)
 # algo.minimizer(L=20, K=1000, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True)

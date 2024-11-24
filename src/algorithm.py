@@ -63,7 +63,7 @@ class TabuSearch:
     def __init__(self, graph) -> None:
         self.graph = graph
 
-    def find_schedule(self, L: int, K: int, gamma: int, initial_schedule: list, aspiration_criterion: bool=False):
+    def find_schedule(self, L: int, K: int, gamma: int, initial_schedule: list=None, random_initial_schedule: bool=False, aspiration_criterion: bool=False):
         '''
         Apply tabu search with initialized parameters to minimize total tardiness.
 
@@ -71,7 +71,9 @@ class TabuSearch:
             L (int): Length of tabu list.
             K (int): Amount of solutions found (initial solution is 0).
             gamma (int): Tolerance from g_best to accept solution. 
-            initial_schedule (list): Schedule to be optimized on.
+            initial_schedule (list): Optional, force initial solution to this schedule (0 indexed). Default is None.
+            random_initial_schedule (bool): Creates an initial solution considering precedence constraints. 
+                                            initial_schedule takes precedence before random_initial_solution. Default is False.
             aspiration_criterion (bool): Optional aspiration criterion that accepts solution incl. in tabu list if it improves g_best. Default is False.
         '''
 
@@ -79,8 +81,25 @@ class TabuSearch:
         self.L = L
         self.K = K
         self.gamma = gamma
-        self.schedule = initial_schedule.copy()
-
+        
+        if initial_schedule is not None:
+            # take initial schedule and convert to 0 indexing
+            self.schedule = [x - 1 for x in initial_schedule]
+            # check initial schedule for validity
+            if self.check_validity() == False:
+                raise ValueError("Initial solution does not meet precedence constraints. Provide a valid initial solution.")
+        elif random_initial_schedule == True:
+            adjacency_matrix = self.graph.G_matrix.copy()
+            self.schedule = []
+            while len(self.schedule) < self.graph.node_num:
+                # schedule ready nodes with no precedences
+                for col in range(self.graph.node_num):
+                    if np.sum(adjacency_matrix[:, col]) == 0 and col not in self.schedule:
+                        self.schedule.append(col)
+                # remove these from the adjacency matrix
+                for scheduled_node in self.schedule:
+                    adjacency_matrix[scheduled_node, :] = 0
+        
         # index where new cycle starts
         new_cycle_index = 0
         # tracker of amount of solutions found 
@@ -91,7 +110,9 @@ class TabuSearch:
         # calculate initial solution
         g_best = self.total_tardiness()
         best_solution = self.schedule.copy()
-        print(f"The initial solution S = {best_solution} has a total tardiness of {g_best}")
+        # have 1 indexed printed solution
+        print_solution = [x + 1 for x in best_solution]
+        print(f"The initial solution S = {print_solution} has a total tardiness of {g_best}")
 
         # infinite loop stopped when K solutions found or no better solution found in one complete cycle
         while k < self.K:
@@ -151,13 +172,17 @@ class TabuSearch:
                     
             # terminate search if no solution found in one cycle
             if not found_solution_in_cycle:
+                # have 1 indexed printed solution
+                print_solution = [x + 1 for x in best_solution]
                 print(f"\nNo further improvements found. Terminated search at k = {k}.")
-                print(f"Best solution: S = {best_solution}")
+                print(f"Best solution: S = {print_solution}")
                 print(f"Total Tardiness = {g_best}\n")
                 return
 
+        # have 1 indexed printed solution
+        print_solution = [x + 1 for x in best_solution]
         print(f"\nTerminated search at k = {k}.") 
-        print(f"Best solution found: S = {best_solution}")
+        print(f"Best solution found: S = {print_solution}")
         print(f"Total Tardiness of {g_best}\n")
         return
 
@@ -170,9 +195,6 @@ class TabuSearch:
         scheduled_set = set()
 
         for scheduled_node in self.schedule:
-            # adjust scheduled_node to 0 indexing (currently 1 indexed)
-            scheduled_node -= 1
-            
             # add current node to schedule
             scheduled_set.add(scheduled_node)
 
@@ -195,7 +217,7 @@ class TabuSearch:
         
         # Iterate over each node in the schedule
         for scheduled_node in self.schedule:
-            node = self.graph.nodes[scheduled_node - 1]
+            node = self.graph.nodes[scheduled_node]
             total_processing_time += node.processing_time
             
             # calculate tardiness of current node and add to total

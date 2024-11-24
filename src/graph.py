@@ -41,13 +41,11 @@ class DAG:
         self.G_matrix = np.zeros([self.node_num, self.node_num], dtype=int)
         for row, col in edges:
             self.G_matrix[row, col] = 1
-        # print(self.G_matrix)
 
         # define nodes
         self.nodes = {}
         for _, row in node_data.iterrows():
             self.nodes[row['Index'] - 1] = Node(row['Index'], row['Type'], row['Processing Time'], row['Due Date'])
-            # print(self.nodes[row['Index']])
 
         # V stores all current last nodes (no predecessors)
         self.V = [i for i in range(self.node_num) if np.sum(self.G_matrix[i]) == 0]
@@ -55,7 +53,6 @@ class DAG:
         self.outgoing_counts = [np.sum(self.G_matrix[i]) for i in range(self.node_num)]
         # calculate amount of ingoing edges for each node
         self.ingoing_counts = np.sum(self.G_matrix, axis=0)
-        # print(self.ingoing_counts)
 
         # get first nodes (no successors)
         self.V_first_nodes = []
