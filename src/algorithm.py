@@ -14,7 +14,7 @@ class LCL:
     Args:
         graph (DAG): DAG to be optimized on.
     '''
-    def __init__(self, graph: DAG) -> None:
+    def __init__(self, graph: DAG):
         self.graph = graph
         # initialize with empty schedule
         self.schedule = []
@@ -23,47 +23,53 @@ class LCL:
         self.iteration = 0
         self.g_max_list = []
 
-    def cost_function(self, j: int) -> float:
+    def cost_function(self, j: int):
         '''
-        Calculate cost for a given job, the cost function is defined as the tardiness.
+        Calculate cost for a given job, the cost function is defined as tardiness.
 
         Args:
-            j (int): job index.
+            j (int): Index of job.
         '''
         dj = self.graph.nodes[j].due_date
         Cj = self.completion_time_j
+        # definition of tardiness
         gj_Cj = np.max([0, Cj - dj])
 
         self.completion_time_j -= self.graph.nodes[j].processing_time
         return gj_Cj
     
 
-    def find_schedule(self, printEachIteration: bool=False):
+    def find_schedule(self, verbose: bool=False):
         '''
         Apply LCL algorithm to minimize g*max.
 
+        Note: Printouts are 1 indexed while internal calculations are based on 0 indexing.
+        
         Args:
-            printEachIteration (bool): Set True to print iteration results. Default is False.
+            verbose (bool): Optional, set True to print iteration results. Default is False.
         '''
         for self.iteration in range(self.graph.node_num):
+            # store original G_matrix and set V as these values will be modified in DAG instance
+            G_matrix_copy = self.graph.G_matrix.copy()
+            V_copy = self.graph.V.copy()
+            
             # calculate and store all last jobs' cost inside gj_list
             gj_list = [self.cost_function(node_index) for node_index in self.graph.V]
             # get index of the job in within V set with the least cost
             min_index = np.argmin(gj_list)
             # calculate gl(Cl) and put it into g_max_list
             # convert to actual job index by indexing set V
-            self.g_max_list.append(int(min(gj_list)))
+            self.g_max_list.append(gj_list[min_index])
             # convert from 0 indexing to 1 indexing to get original node number
             # add node to the front of schedule (schedule in a reversed order)
             self.schedule = np.insert(self.schedule, 0, self.graph.V[min_index] + 1)
             # pop out the node with the least cost
-            self.graph.pop_node(self.graph.V[min_index], node_type="last")
+            self.graph.pop_node(self.graph.V[min_index])
             
             # print intermediate iteration schedule
-            if (printEachIteration):
+            if (verbose):
                 iteration_type = "final" if self.iteration == self.graph.node_num - 1 else "partial"
                 schedule_list = [int(node) for node in self.schedule]
-                # +1 to convert to 1 indexing
                 print(f"In iteration {self.iteration + 1}: ")
                 print(f"{iteration_type} schedule S = {schedule_list}\n")
 
@@ -71,6 +77,10 @@ class LCL:
         print("\nThe optimal schedule for 1|prec|g*max problem is:")
         print(f"S = {[int(self.schedule[i]) for i in range(self.graph.node_num)]}")
         print(f"where g*max = {max(self.g_max_list)}\n")
+        
+        # restore original values in DAG instance
+        self.graph.G_matrix = G_matrix_copy
+        self.graph.V = V_copy    
 
 
 class TabuSearch:
@@ -80,12 +90,14 @@ class TabuSearch:
     Args:
         graph (DAG): DAG to be optimized on.
     '''
-    def __init__(self, graph: DAG) -> None:
+    def __init__(self, graph: DAG):
         self.graph = graph
 
-    def find_schedule(self, L: int, K: int, gamma: int, initial_schedule: list=None, generate_initial_schedule: bool=True, aspiration_criterion: bool=False):
+    def find_schedule(self, L: int, K: int, gamma: int, initial_schedule: list=None, generate_initial_schedule: bool=True, aspiration_criterion: bool=False, verbose: bool=False):
         '''
         Apply tabu search with initialized parameters to minimize total tardiness.
+        
+        Note: User input and printouts are 1 indexed while internal calculations are based on 0 indexing.
 
         Args:
             L (int): Length of tabu list.
@@ -95,6 +107,7 @@ class TabuSearch:
             generate_initial_schedule (bool): Creates an initial solution considering precedence constraints. 
                                               initial_schedule takes precedence before random_initial_solution. Default is True.
             aspiration_criterion (bool): Optional aspiration criterion that accepts solution included in tabu list if it improves g_best. Default is False.
+            verbose (bool): Optional, set True to print intermediate results when accepted solution improved g_best. Default is False.
         '''
 
         # set values of tabu search
@@ -103,7 +116,7 @@ class TabuSearch:
         self.gamma = gamma
         
         if initial_schedule is not None:
-            # take initial schedule and convert to 0 indexing
+            # take initial schedule and convert to 0 indexing as user input in 1 indexed
             self.schedule = [x - 1 for x in initial_schedule]
             # check initial schedule for validity
             if self.check_validity() == False:
@@ -172,7 +185,8 @@ class TabuSearch:
                     if current_tardiness < g_best: 
                         g_best = current_tardiness
                         best_solution = self.schedule.copy()
-                        print(f"Improved solution found with total tardiness = {g_best} (current k = {k+1})")
+                        if verbose:
+                            print(f"Improved solution found with total tardiness = {g_best} (current k = {k+1})")
                     
                     # update where new cycle should start
                     new_cycle_index = current_index + 1
