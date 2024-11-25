@@ -26,6 +26,7 @@ print("This part is designed to utilise LCL algorithm for finding the optimal so
 algo = LCL(graph=graph)
 algo.find_schedule(verbose=True)
 
+
 # Question 2: tabu search for approximate optimal solution for 1|prec|sum_Tj problem
 print("\n-------------------Results for Question 2---------------------")
 print("This part is designed to use tabu search for finding the optimal solution for 1|prec|sum_Tj problem. \n")
@@ -37,6 +38,6 @@ algo = TabuSearch(graph=graph)
 # try with different numbers of K (10, 100, 1000)
 algo.find_schedule(L=20, K=10, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True, verbose=True)
 # check that algorithm also works for random initial schedule
-algo.find_schedule(L=20, K=10, gamma=10, aspiration_criterion=True, verbose=True)
+# algo.find_schedule(L=20, K=10, gamma=10, aspiration_criterion=True, verbose=True)
 # algo.find_schedule(L=20, K=100, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True, verbose=True)
-# algo.minimizer(L=20, K=1000, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True, verbose=True)
+# algo.find_schedule(L=20, K=1000, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True, verbose=True)

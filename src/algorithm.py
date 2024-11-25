@@ -16,28 +16,28 @@ class LCL:
     '''
     def __init__(self, graph: DAG):
         self.graph = graph
-        # initialize with empty schedule
-        self.schedule = []
-        # initialize with total completion time
-        self.completion_time_j = np.sum([self.graph.nodes[i].processing_time for i in range(self.graph.node_num)])
-        self.iteration = 0
-        self.g_max_list = []
 
-    def cost_function(self, j: int):
+    def tardiness(self, j: int, current_schedule: list):
         '''
-        Calculate cost for a given job, the cost function is defined as tardiness.
+        Calculate tardiness of job j scheduled last excluding the jobs already scheduled.
 
         Args:
             j (int): Index of job.
+            current_schedule (list): Already scheduled jobs list.
         '''
+        # due date of node j
         dj = self.graph.nodes[j].due_date
-        Cj = self.completion_time_j
-        # definition of tardiness
-        gj_Cj = np.max([0, Cj - dj])
+        
+        # calculate completion time of job j scheduled last given nodes not scheduled yet
+        Cj = 0
+        for node in range(self.graph.node_num):
+            if node not in current_schedule:
+                Cj += self.graph.nodes[node].processing_time
 
-        self.completion_time_j -= self.graph.nodes[j].processing_time
+        # calculate tardiness of job j
+        gj_Cj = np.max([Cj - dj, 0])
+        
         return gj_Cj
-    
 
     def find_schedule(self, verbose: bool=False):
         '''
@@ -52,33 +52,38 @@ class LCL:
         G_matrix_copy = self.graph.G_matrix.copy()
         V_copy = self.graph.V.copy()
         
+        # define parameters required for storing the results
+        schedule = []
+        g_list = []
+        
         print("Applying LCL algorithm:\n")
         
-        for self.iteration in range(self.graph.node_num):
+        for i in range(self.graph.node_num):
             # calculate and store all last jobs' cost inside gj_list
-            gj_list = [self.cost_function(node_index) for node_index in self.graph.V]
-            # get index of the job in within V set with the least cost
+            gj_list = [self.tardiness(node_index, schedule) for node_index in self.graph.V]
+            # get index of the job within V set with the least cost
             min_index = np.argmin(gj_list)
-            # calculate gl(Cl) and put it into g_max_list
-            # convert to actual job index by indexing set V
-            self.g_max_list.append(gj_list[min_index])
+            # calculate gl(Cl) and put it into g_list
+            g_list.insert(0, gj_list[min_index])
             # convert from 0 indexing to 1 indexing to get original node number
             # add node to the front of schedule (schedule in a reversed order)
-            self.schedule = np.insert(self.schedule, 0, self.graph.V[min_index] + 1)
+            schedule = np.insert(schedule, 0, self.graph.V[min_index])
             # pop out the node with the least cost
             self.graph.pop_node(self.graph.V[min_index])
             
             # print intermediate iteration schedule
             if (verbose):
-                iteration_type = "final" if self.iteration == self.graph.node_num - 1 else "partial"
-                schedule_list = [int(node) for node in self.schedule]
-                print(f"In iteration {self.iteration + 1}: ")
-                print(f"{iteration_type} schedule S = {schedule_list}\n")
-
+                iteration_type = "final" if len(schedule) == self.graph.node_num else "partial"
+                # convert to 1 indexing
+                schedule_list = [node + 1 for node in schedule]
+                print(f"In iteration {i + 1}: ")
+                print(f"{iteration_type} schedule S = {schedule_list} with current g = {g_list[0]}\n")
+        
         # print the optimal schedule
         print("\nThe optimal schedule for 1|prec|g*max problem is:")
-        print(f"S = {[int(self.schedule[i]) for i in range(self.graph.node_num)]}")
-        print(f"where g*max = {max(self.g_max_list)}\n")
+        # convert to 1 indexing
+        print(f"S = {[node + 1 for node in schedule]}")
+        print(f"where g*max = {max(g_list)}\n")
         
         # restore original values in DAG instance
         self.graph.G_matrix = G_matrix_copy
@@ -111,7 +116,6 @@ class TabuSearch:
             aspiration_criterion (bool): Optional aspiration criterion that accepts solution included in tabu list if it improves g_best. Default is False.
             verbose (bool): Optional, set True to print intermediate results when accepted solution improved g_best. Default is False.
         '''
-
         # set values of tabu search
         self.L = L
         self.K = K
@@ -190,7 +194,7 @@ class TabuSearch:
                         g_best = current_tardiness
                         best_solution = self.schedule.copy()
                         if verbose:
-                            print(f"Improved solution found with total tardiness = {g_best} (current k = {k+1})")
+                            print(f"Improved solution found with g_best = {g_best}, swap pair {swap_pair} added to tabu list (current k = {k+1})")
                     
                     # update where new cycle should start
                     new_cycle_index = current_index + 1
@@ -259,7 +263,7 @@ class TabuSearch:
             total_processing_time += node.processing_time
             
             # calculate tardiness of current node and add to total
-            tardiness = max(node.due_date - total_processing_time, 0)
+            tardiness = max(total_processing_time - node.due_date, 0)
             total_tardiness += tardiness
 
         return total_tardiness
