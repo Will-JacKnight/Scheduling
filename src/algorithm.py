@@ -48,11 +48,13 @@ class LCL:
         Args:
             verbose (bool): Optional, set True to print iteration results. Default is False.
         '''
+        # store original G_matrix and set V as these values will be modified in DAG instance
+        G_matrix_copy = self.graph.G_matrix.copy()
+        V_copy = self.graph.V.copy()
+        
+        print("Applying LCL algorithm:\n")
+        
         for self.iteration in range(self.graph.node_num):
-            # store original G_matrix and set V as these values will be modified in DAG instance
-            G_matrix_copy = self.graph.G_matrix.copy()
-            V_copy = self.graph.V.copy()
-            
             # calculate and store all last jobs' cost inside gj_list
             gj_list = [self.cost_function(node_index) for node_index in self.graph.V]
             # get index of the job in within V set with the least cost
@@ -80,7 +82,7 @@ class LCL:
         
         # restore original values in DAG instance
         self.graph.G_matrix = G_matrix_copy
-        self.graph.V = V_copy    
+        self.graph.V = V_copy
 
 
 class TabuSearch:
@@ -139,6 +141,8 @@ class TabuSearch:
         k = 0
         # empty tabu list
         tabu_list = []
+        
+        print("Applying Tabu Search:\n")
 
         # calculate initial solution
         g_best = self.total_tardiness()
