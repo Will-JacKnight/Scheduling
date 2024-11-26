@@ -75,14 +75,14 @@ class LCL:
             if (verbose):
                 iteration_type = "final" if len(schedule) == self.graph.node_num else "partial"
                 # convert to 1 indexing
-                schedule_list = [node + 1 for node in schedule]
+                schedule_list = [int(node + 1) for node in schedule]
                 print(f"In iteration {i + 1}: ")
                 print(f"{iteration_type} schedule S = {schedule_list} with current g = {g_list[0]}\n")
         
         # print the optimal schedule
         print("\nThe optimal schedule for 1|prec|g*max problem is:")
         # convert to 1 indexing
-        print(f"S = {[node + 1 for node in schedule]}")
+        print(f"S = {[int(node + 1) for node in schedule]}")
         print(f"where g*max = {max(g_list)}\n")
         
         # restore original values in DAG instance
@@ -151,6 +151,8 @@ class TabuSearch:
         # calculate initial solution
         g_best = self.total_tardiness()
         best_solution = self.schedule.copy()
+        # tracking of tardiness at kth iteration g(x_k)
+        x_k = self.total_tardiness()
         # have 1 indexed printed solution
         print_solution = [x + 1 for x in best_solution]
         print(f"The initial solution S = {print_solution} has a total tardiness of {g_best}")
@@ -182,12 +184,15 @@ class TabuSearch:
                 current_tardiness = self.total_tardiness()
                 
                 # calculate delta of current schedule
-                delta = g_best - current_tardiness
+                delta = x_k - current_tardiness
                 
                 # accept solution if delta is higher than -gamma and not from tabu list
                 # if aspiration_criterion is set to true also check this criterion (one of both criterion to accept solution)
                 if (delta > (- self.gamma) and (swap_pair not in tabu_list)) or (aspiration_criterion==True and current_tardiness < g_best):
                     found_solution_in_cycle = True
+                    
+                    # if solution is accepted update x_k for iteration k+1
+                    x_k = current_tardiness
                     
                     # save solution if better than current g_best
                     if current_tardiness < g_best: 

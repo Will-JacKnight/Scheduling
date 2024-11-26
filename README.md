@@ -31,7 +31,7 @@ In order to run the program, you'll need to install python virtual environment. 
 
     #on macOS or Linux
     source venv/bin/activate
-        ```
+    ```
 5.	**Install the required pre-requisites:**
     ```sh
     pip install -r requirements.txt
