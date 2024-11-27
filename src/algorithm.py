@@ -100,7 +100,7 @@ class TabuSearch:
     def __init__(self, graph: DAG):
         self.graph = graph
 
-    def find_schedule(self, L: int, K: int, gamma: int, initial_schedule: list=None, generate_initial_schedule: bool=True, aspiration_criterion: bool=False, verbose: bool=False):
+    def find_schedule(self, L: int, K: int, gamma: int, initial_schedule: list=None, generate_initial_schedule: bool=True, aspiration_criterion: bool=False, verbose: int=0):
         '''
         Apply tabu search with initialized parameters to minimize total tardiness.
         
@@ -114,7 +114,7 @@ class TabuSearch:
             generate_initial_schedule (bool): Creates an initial solution considering precedence constraints. 
                                               initial_schedule takes precedence before random_initial_solution. Default is True.
             aspiration_criterion (bool): Optional aspiration criterion that accepts solution included in tabu list if it improves g_best. Default is False.
-            verbose (bool): Optional, set True to print intermediate results when accepted solution improved g_best. Default is False.
+            verbose (int): Optional, set to 1 or 2 to print intermediate results (2=print all results, 1=print results when g_best improves). Default is 0.
         '''
         # set values of tabu search
         self.L = L
@@ -198,8 +198,11 @@ class TabuSearch:
                     if current_tardiness < g_best: 
                         g_best = current_tardiness
                         best_solution = self.schedule.copy()
-                        if verbose:
-                            print(f"Improved solution found with g_best = {g_best}, swap pair {swap_pair} added to tabu list (current k = {k+1})")
+                        if verbose == 2 or verbose == 1:
+                            print(f"Improved solution found with g_best = {g_best}, swap pair {(swap_pair[0] + 1, swap_pair[1] + 1)} added to tabu list (current k = {k+1})")
+                    elif verbose == 2:
+                        # print also when no improvement was made but solution was accepted
+                        print(f"-- Accpeted solution but didn't improve with g_best = {g_best} and g(y) = {x_k}, swap pair {(swap_pair[0] + 1, swap_pair[1] + 1)} added to tabu list (current k = {k+1})")
                     
                     # update where new cycle should start
                     new_cycle_index = current_index + 1

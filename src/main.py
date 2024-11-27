@@ -31,16 +31,19 @@ algo.find_schedule(verbose=True)
 print("\n-------------------Results for Question 2---------------------")
 print("This part is designed to use tabu search for finding the optimal solution for 1|prec|sum_Tj problem. \n")
 
-# 1 indexed as user input (initial solution)
+# 1-indexing as user input (initial solution)
 initial_solution = [30, 29, 23, 10, 9, 14, 13, 12, 4, 20, 22, 3, 27, 28, 8, 7, 19, 21, 26, 18, 25, 17, 15, 6, 24, 16, 5, 11, 2, 1, 31]
 algo = TabuSearch(graph=graph)
 
 # try with different numbers of K (10, 100, 1000)
-# algo.find_schedule(L=20, K=1000, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True, verbose=True)
-# algo.find_schedule(L=20, K=100, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True, verbose=True)
-print("Tabu Search for L=20, K=1000, gamma=10:\n")
-# only run K=1000 because the earlier iterations are also included when running with higher K
-algo.find_schedule(L=20, K=1000, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True, verbose=True)
+# algo.find_schedule(L=20, K=10, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True, verbose=2)
+# algo.find_schedule(L=20, K=100, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True, verbose=2)
+print("Only run K=1000 as it also includes the tabu search for K=10 and K=100 when looking at the early iterations\n")
+print("Tabu Search for L=20, K=1000, gamma=10 including all iterations:\n")
+algo.find_schedule(L=20, K=1000, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True, verbose=2)
+
+print("Tabu Search for L=20, K=1000, gamma=10 only with solutions improving g_best:\n")
+algo.find_schedule(L=20, K=1000, gamma=10, initial_schedule=initial_solution, aspiration_criterion=True, verbose=1)
 
 # check that algorithm also works for random initial schedule
-# algo.find_schedule(L=20, K=10, gamma=10, aspiration_criterion=True, verbose=True)
+# algo.find_schedule(L=20, K=10, gamma=10, aspiration_criterion=True, verbose=2)
